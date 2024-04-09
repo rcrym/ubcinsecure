@@ -1,5 +1,6 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+import { Analytics, getAnalytics, isSupported } from "firebase/analytics";
+import { getApp, getApps, initializeApp } from "firebase/app";
 import { getDatabase } from "firebase/database";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -16,9 +17,18 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
-// Initialize Realtime Database and get a reference to the service
+let analytics: Analytics | null = null;
+const setupAnalytics = async () => {
+    const supported = await isSupported();
+    if (supported) {
+        analytics = getAnalytics(app);
+    }
+    return analytics;
+};
+setupAnalytics();
+// // Initialize Realtime Database and get a reference to the service
 const database = getDatabase(app);
 
-export { database };
+export {analytics,  database };

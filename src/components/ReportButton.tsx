@@ -1,21 +1,33 @@
 // components/ReportButton.tsx
+import { logEvent } from "@firebase/analytics";
 import { Button } from "@geist-ui/react";
-import { ref, push, serverTimestamp, set } from "firebase/database";
-import { database } from "../firebaseConfig";
-import { setCookie, getCookie } from "../utils/cookies"; // Make sure you have this utility
-import { v4 as uuidv4 } from "uuid";
 import { Dialog, DialogPanel } from "@tremor/react";
+import { push, ref, serverTimestamp } from "firebase/database";
 import { useState } from "react";
-import { Triangle } from "@geist-ui/icons";
 import { IoTriangleSharp } from "react-icons/io5";
+import { v4 as uuidv4 } from "uuid";
+import { analytics, database } from "../firebaseConfig";
+import { getCookie, setCookie } from "../utils/cookies"; // Make sure you have this utility
 interface ReportButtonProps {}
 
 const ReportButton: React.FC<ReportButtonProps> = ({}) => {
     // const { setToast } = useToasts();
     const [isOpen, setIsOpen] = useState(false);
-    const [isRateLimited, setIsRateLimited] = useState(false);
+    // const [isRateLimited, setIsRateLimited] = useState(false);
+    const [status, setStatus] = useState<"success" | "ratelimited" | "error">(
+        "error"
+    );
 
     const reportIssue = async () => {
+        analytics && logEvent(analytics, "report_button_click");
+        // Check if the user is offline before proceeding
+        if (!navigator.onLine) {
+            // User is offline, display an error message
+            setStatus("error");
+            setIsOpen(true);
+            return; // Stop execution if offline
+        }
+
         let userId = getCookie("userId");
         if (!userId) {
             userId = uuidv4();
@@ -28,38 +40,33 @@ const ReportButton: React.FC<ReportButtonProps> = ({}) => {
             const halfHour = 30 * 60 * 1000;
 
             if (now - parseInt(lastReportTime) < halfHour) {
-                setIsRateLimited(true);
+                setStatus("ratelimited");
                 setIsOpen(true);
-                // setToast({
-                //     text: "You can only report once per hour.",
-                //     type: "error",
-                // });
-                // alert("You can only report once per hour.");
+                analytics && logEvent(analytics, "report_rate_limited");
                 return;
-            } else {
-                setIsRateLimited(false);
             }
+        } else {
+            setCookie("lastReportTime", Date.now().toString(), 1);
         }
 
         const reportsRef = ref(database, "reports");
         await push(reportsRef, {
             timestamp: serverTimestamp(),
-            // timestamp: Date.now() - 4 * 60 * 60 * 1000 + Math.random()* 60 * 60 * 1000 - + Math.random()* 60 * 60 * 1000,
-
-            userId: userId, // Changed from 'user' to 'userId' to match the rules
+            // timestamp: Date.now() - 29.9 * 60 * 1000,
+            userId: userId,
         })
             .then(() => {
-                // setToast({
-                //     text: "Report submitted successfully",
-                //     type: "success",
-                // });
+                setStatus("success");
                 setIsOpen(true);
-                // alert("Report submitted successfully");
-                setCookie("lastReportTime", Date.now().toString(), 1); // Set/Update the cookie
+                setCookie("lastReportTime", Date.now().toString(), 1);
+                analytics && logEvent(analytics, "report_submission_success");
             })
             .catch((error) => {
-                // setToast({ text: "Failed to submit report", type: "error" });
-                // alert("Failed to submit report");
+                setStatus("error");
+                setIsOpen(true);
+                analytics && logEvent(analytics, "report_submission_error", {
+                    error: error.message,
+                });
             });
     };
 
@@ -86,15 +93,67 @@ const ReportButton: React.FC<ReportButtonProps> = ({}) => {
                 static={true}
             >
                 <DialogPanel>
-                    <h3 className="text-lg font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
-                        {isRateLimited
-                            ? "Report Already Recorded"
-                            : "Issue Report Submitted Successfully"}
-                    </h3>
+                    <div className="flex items-center">
+                        {status == "success" && (
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="green"
+                                className="w-6 h-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                                />
+                            </svg>
+                        )}
+                        {status == "error" && (
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="orange"
+                                className="w-6 h-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
+                                />
+                            </svg>
+                        )}
+                        {status == "ratelimited" && (
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                strokeWidth={1.5}
+                                stroke="#0070f3"
+                                className="w-6 h-6"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"
+                                />
+                            </svg>
+                        )}
+                        <h3 className="ml-2 text-lg font-semibold text-tremor-content-strong dark:text-dark-tremor-content-strong">
+                            {status == "ratelimited" &&
+                                "Report Already Recorded"}
+                            {status == "success" &&
+                                "Report Submitted Successfully"}
+                            {status == "error" && "Report Failed to Submit"}
+                        </h3>
+                    </div>
                     <p className="my-2 leading-6 text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-                        {isRateLimited
-                            ? "Thanks for alerting us!"
-                            : "Thanks for alerting us!"}
+                        {(status == "ratelimited" || status == "success") &&
+                            "Thanks for alerting us!"}
+                        {status == "error" && "Sorry! Please try again."}
                     </p>
                     <div className="flex justify-center w-full">
                         <Button
