@@ -8,6 +8,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { AnimatedCounter } from "react-animated-counter";
 import ThemeSwitcher from "./ThemeSwitcher";
+import { ceilToNearestHalfHour, format12HourTime } from "@/utils/formatTime";
 interface ReportsGraphProps {
     isDown: boolean;
     setIsDown: Dispatch<SetStateAction<boolean>>;
@@ -32,40 +33,6 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
     >(null);
     const [baseline, setBaseline] = useState<number | null>(null);
 
-    function format12HourTime(date: Date): string {
-        let hours = date.getHours();
-        let minutes = date.getMinutes();
-        let ampm = hours >= 12 ? "PM" : "AM";
-        hours = hours % 12;
-        hours = hours ? hours : 12; // the hour '0' should be '12'
-        let minutesStr = minutes.toString().padStart(2, "0");
-
-        let date2 = new Date(date.getTime() - 30 * 60 * 1000);
-        let hours2 = date2.getHours();
-        let minutes2 = date2.getMinutes();
-        let ampm2 = hours2 >= 12 ? "PM" : "AM";
-        hours2 = hours2 % 12;
-        hours2 = hours2 ? hours2 : 12; // the hour '0' should be '12'
-        let minutesStr2 = minutes2.toString().padStart(2, "0");
-
-        let formattedTime = `${hours}:${minutesStr} ${ampm}`;
-        return formattedTime;
-    }
-    function floorToNearestHalfHour(timestamp: number): number {
-        const millisecondsPerHalfHour = 30 * 60 * 1000; // Milliseconds in half an hour
-        const floored =
-            Math.floor(timestamp / millisecondsPerHalfHour) *
-            millisecondsPerHalfHour;
-        return floored;
-    }
-    function ceilToNearestHalfHour(timestamp: number): number {
-        const millisecondsPerHalfHour = 30 * 60 * 1000; // Milliseconds in half an hour
-        const ceiled =
-            Math.ceil(timestamp / millisecondsPerHalfHour) *
-            millisecondsPerHalfHour;
-        return ceiled;
-    }
-
     useEffect(() => {
         const fetchData = () => {
             const twelveHoursAgo = Date.now() - 12 * 60 * 60 * 1000; // 12 hours ago
@@ -75,21 +42,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                 startAt(twelveHoursAgo)
             );
 
-            // for (let i = 12 * 60; i >= 0; i--) {
-            //     //             // For each 10-minute interval in the last 12 hours
-            //     // const time = new Date(twelveHoursAgo + i * 60 * 60 * 1000);
-            //     const time = new Date(Date.now() - i * 60 * 1000);
-            //     const formattedTime = format12HourTime(time);
-            //     console.log(formattedTime);
-            //     //             // Initialize data points for each 10-minute interval
-            //     //             dataPoints.push({
-            //     //                 time: formattedTime,
-            //     //                 Reports: 0,
-            //     //             });
-            // }
-            console.log("RERENDER");
             onValue(reportsRef, (snapshot) => {
-                console.log("new value");
                 const rawData = snapshot.val() || {};
 
                 // Set up x axis
@@ -124,7 +77,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                         ceilToNearestHalfHour(report.timestamp)
                     );
                     const formattedReportTime = format12HourTime(reportTime);
-                    console.log(formattedReportTime);
+
                     let dataPointToIncrementIndex = dataPoints.findIndex(
                         (item) => item.time == formattedReportTime
                     );
@@ -164,7 +117,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                 // Step 3: Set the baseline as mean + (multiplier * standard deviation) + adjustment factor
                 // The multiplier can be adjusted based on desired sensitivity
                 const multiplier = 1.5; // This is adjustable
-                const adjustmentFactor = 2; // This is also adjustable
+                const adjustmentFactor = 5; // This is also adjustable
                 let baselineCalced = Math.floor(
                     mean + multiplier * stdDeviation + adjustmentFactor
                 );
@@ -177,7 +130,6 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                     Baseline: baselineCalced,
                     ...dataPoint,
                 }));
-                console.log("new", dataPoints);
 
                 // Set and display the dataPoints
                 if (dataPoints.length !== 0) {

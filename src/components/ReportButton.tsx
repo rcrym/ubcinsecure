@@ -3,16 +3,18 @@ import { logEvent } from "@firebase/analytics";
 import { Button } from "@geist-ui/react";
 import { Dialog, DialogPanel } from "@tremor/react";
 import { push, ref, serverTimestamp } from "firebase/database";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoTriangleSharp } from "react-icons/io5";
 import { v4 as uuidv4 } from "uuid";
 import { analytics, database } from "../firebaseConfig";
 import { getCookie, setCookie } from "../utils/cookies"; // Make sure you have this utility
+import { formatTimeDuration } from "@/utils/formatTime";
 interface ReportButtonProps {}
 
 const ReportButton: React.FC<ReportButtonProps> = ({}) => {
     // const { setToast } = useToasts();
     const [isOpen, setIsOpen] = useState(false);
+    const [minsUntilNextReport, setMinsUntilNextReport] = useState("30 mins");
     // const [isRateLimited, setIsRateLimited] = useState(false);
     const [status, setStatus] = useState<"success" | "ratelimited" | "error">(
         "error"
@@ -34,12 +36,13 @@ const ReportButton: React.FC<ReportButtonProps> = ({}) => {
             setCookie("userId", userId, 1);
         }
 
-        const lastReportTime = getCookie("lastReportTime");
+        let lastReportTime = getCookie("lastReportTime");
         if (lastReportTime) {
             const now = Date.now();
             const halfHour = 30 * 60 * 1000;
 
             if (now - parseInt(lastReportTime) < halfHour) {
+                updateTimeUntilNextReport();
                 setStatus("ratelimited");
                 setIsOpen(true);
                 analytics && logEvent(analytics, "report_rate_limited");
@@ -64,10 +67,29 @@ const ReportButton: React.FC<ReportButtonProps> = ({}) => {
             .catch((error) => {
                 setStatus("error");
                 setIsOpen(true);
-                analytics && logEvent(analytics, "report_submission_error", {
-                    error: error.message,
-                });
+                analytics &&
+                    logEvent(analytics, "report_submission_error", {
+                        error: error.message,
+                    });
             });
+    };
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            updateTimeUntilNextReport();
+        }, 1000); // Update every second initially
+
+        return () => clearInterval(interval); // Clean up interval on component unmount
+    }, []);
+
+    const updateTimeUntilNextReport = () => {
+        let now = Date.now();
+        let lastReportTime = getCookie("lastReportTime");
+        if (lastReportTime) {
+            let duration = parseInt(lastReportTime) + 30 * 60 * 1000 - now;
+            duration = duration < 0 ? 0 : duration;
+            setMinsUntilNextReport(formatTimeDuration(duration));
+        }
     };
 
     return (
@@ -151,8 +173,9 @@ const ReportButton: React.FC<ReportButtonProps> = ({}) => {
                         </h3>
                     </div>
                     <p className="my-2 leading-6 text-tremor-default text-tremor-content dark:text-dark-tremor-content">
-                        {(status == "ratelimited" || status == "success") &&
-                            "Thanks for alerting us!"}
+                        {status == "success" && "Thanks for alerting us!"}
+                        {status == "ratelimited" &&
+                            `Thanks for alerting us! You can report an issue again in ${minsUntilNextReport}.`}
                         {status == "error" && "Sorry! Please try again."}
                     </p>
                     <div className="flex justify-center w-full">
