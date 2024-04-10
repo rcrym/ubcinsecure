@@ -57,7 +57,7 @@ const ReportButton: React.FC<ReportButtonProps> = ({}) => {
         const reportsRef = ref(database, "reports");
         await push(reportsRef, {
             timestamp: serverTimestamp(),
-            // timestamp: Date.now() - 29.9 * 60 * 1000,
+            // timestamp: Date.now() - 6.5 * 60 * 60 * 1000,
             userId: userId,
         })
             .then(() => {
