@@ -29,6 +29,29 @@ body {
     justify-content: flex-end !important;
 }
 
+.close_button {
+    color: white !important;
+    border-color: #2d3748 !important;
+    background-color: #2d3748 !important;
+}
+.close_button:hover {
+    color: white !important;
+    border-color: #4a5568 !important;
+    background-color: #4a5568 !important;
+}
+
+.report_button {
+    /* color: white !important;
+    border-color: #2d3748 !important;
+    background-color: #2d3748 !important; */
+}
+.report_button:hover {
+    /* color: white !important;
+    border-color: #4a5568 !important;
+    background-color: #4a5568 !important;
+} */
+}
+
 @layer utilities {
     .text-balance {
         text-wrap: balance;

@@ -1,4 +1,4 @@
-// components/ReportButton.tsx
+"use client";
 import { logEvent } from "@firebase/analytics";
 import { Button } from "@geist-ui/react";
 import { Dialog, DialogPanel } from "@tremor/react";
@@ -9,12 +9,14 @@ import { v4 as uuidv4 } from "uuid";
 import { analytics, database } from "../firebaseConfig";
 import { getCookie, setCookie } from "../utils/cookies"; // Make sure you have this utility
 import { formatTimeDuration } from "@/utils/formatTime";
+import { useTheme } from "next-themes";
 interface ReportButtonProps {}
 
 const ReportButton: React.FC<ReportButtonProps> = ({}) => {
     // const { setToast } = useToasts();
     const [isOpen, setIsOpen] = useState(false);
     const [minsUntilNextReport, setMinsUntilNextReport] = useState("30 mins");
+    const { systemTheme, theme } = useTheme();
     // const [isRateLimited, setIsRateLimited] = useState(false);
     const [status, setStatus] = useState<"success" | "ratelimited" | "error">(
         "error"
@@ -99,6 +101,7 @@ const ReportButton: React.FC<ReportButtonProps> = ({}) => {
                 shadow
                 type="success-light"
                 onClick={reportIssue}
+                className="report_button"
                 font={"15px"}
                 // style={{ marginBottom: "20px" }}
                 placeholder={undefined}
@@ -180,11 +183,13 @@ const ReportButton: React.FC<ReportButtonProps> = ({}) => {
                     </p>
                     <div className="flex justify-center w-full">
                         <Button
-                            // auto
-                            type="secondary-light"
-                            // color="green"
-                            // className="mt-8 w-full"
-                            width={"100%"}
+                            type={
+                                (theme === "system" ? systemTheme : theme) ==
+                                "dark"
+                                    ? "secondary-light"
+                                    : "secondary"
+                            }
+                            className="close_button"
                             onClick={() => setIsOpen(false)}
                             placeholder={undefined}
                             onPointerEnterCapture={undefined}

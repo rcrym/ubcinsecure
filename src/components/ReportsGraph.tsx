@@ -32,6 +32,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
         number | null
     >(null);
     const [baseline, setBaseline] = useState<number | null>(null);
+    const [isOnline, setIsOnline] = useState(false);
 
     useEffect(() => {
         const fetchData = () => {
@@ -117,7 +118,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                 // Step 3: Set the baseline as mean + (multiplier * standard deviation) + adjustment factor
                 // The multiplier can be adjusted based on desired sensitivity
                 const multiplier = 1.5; // This is adjustable
-                const adjustmentFactor = 5; // This is also adjustable
+                const adjustmentFactor = 2; // This is also adjustable
                 let baselineCalced = Math.floor(
                     mean + multiplier * stdDeviation + adjustmentFactor
                 );
@@ -160,6 +161,22 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
             setIsDown(reportsInLastHalfHour > baseline);
         }
     }, [reportsInLastHalfHour, setIsDown, baseline]);
+
+    useEffect(() => {
+        setIsOnline(window.navigator.onLine);
+
+        const handleOnlineStatus = () => {
+            setIsOnline(window.navigator.onLine);
+        };
+
+        window.addEventListener("online", handleOnlineStatus);
+        window.addEventListener("offline", handleOnlineStatus);
+
+        return () => {
+            window.removeEventListener("online", handleOnlineStatus);
+            window.removeEventListener("offline", handleOnlineStatus);
+        };
+    }, []);
 
     const customTooltip = (props: CustomTooltipProps) => {
         const { payload, active } = props;
@@ -239,10 +256,15 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                 <h3 className="text-tremor-default text-tremor-content dark:text-dark-tremor-content mr-2">
                     Issues Reported in Last 30 Minutes
                 </h3>
-
-                <Badge color={"#0070f3"} icon={RiRecordCircleFill}>
-                    live
-                </Badge>
+                {loading || !isOnline ? (
+                    <Badge className="invisible" icon={RiRecordCircleFill}>
+                        live
+                    </Badge>
+                ) : (
+                    <Badge color={"#0070f3"} icon={RiRecordCircleFill}>
+                        live
+                    </Badge>
+                )}
                 <div className="ml-auto">
                     <ThemeSwitcher />
                 </div>

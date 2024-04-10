@@ -22,7 +22,7 @@ export default function Home() {
             <h1 className="text-3xl mb-10 dark:text-white text-gray-800">
                 Is ubcsecure down?{" "}
                 {loading ? (
-                    <span className="text-gray-700 animate-pulse">Hmm</span>
+                    <span className="text-gray-600 animate-pulse">Hmm</span>
                 ) : isDown ? (
                     <span className="text-red-500">Yes.</span>
                 ) : (
