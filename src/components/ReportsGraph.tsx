@@ -118,7 +118,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                 // Step 3: Set the baseline as mean + (multiplier * standard deviation) + adjustment factor
                 // The multiplier can be adjusted based on desired sensitivity
                 const multiplier = 1.5; // This is adjustable
-                const adjustmentFactor = 2; // This is also adjustable
+                const adjustmentFactor = 10; // This is also adjustable
                 let baselineCalced = Math.floor(
                     mean + multiplier * stdDeviation + adjustmentFactor
                 );
