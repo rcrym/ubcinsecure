@@ -84,6 +84,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                     );
                     if (dataPointToIncrementIndex) {
                         dataPoints[dataPointToIncrementIndex].Reports++;
+                        // dataPoints[Math.floor(Math.random() * dataPoints.length)].Reports+= Math.floor(Math.random() ** 9 * 10);
                     }
                 });
 
@@ -118,9 +119,10 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                 // Step 3: Set the baseline as mean + (multiplier * standard deviation) + adjustment factor
                 // The multiplier can be adjusted based on desired sensitivity
                 const multiplier = 1.3; // This is adjustable
-                const adjustmentFactor = 5; // This is also adjustable
-                let baselineCalced = Math.floor(
-                    mean + multiplier * stdDeviation + adjustmentFactor
+                const minimum = 10;
+                let baselineCalced = Math.max(
+                    Math.floor(mean + multiplier * stdDeviation),
+                    minimum
                 );
 
                 // Set the baseline
