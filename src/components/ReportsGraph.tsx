@@ -8,7 +8,11 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 
 import { AnimatedCounter } from "react-animated-counter";
 import ThemeSwitcher from "./ThemeSwitcher";
-import { ceilToNearestHalfHour, format12HourTime } from "@/utils/formatTime";
+import {
+    ceilToNearestHalfHour,
+    floorToNearestHalfHour,
+    format12HourTime,
+} from "@/utils/formatTime";
 interface ReportsGraphProps {
     isDown: boolean;
     setIsDown: Dispatch<SetStateAction<boolean>>;
@@ -145,11 +149,33 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
         // Call fetchData immediately to load data on component mount
         fetchData();
         // Set up an interval to fetch data every minute
-        const intervalId = setInterval(fetchData, 5 * 1000);
+        // const intervalId = setInterval(fetchData, 5 * 1000);
+
+        // Checks whether the current time floored to the nearest half hour
+        // is no longer the last object in data
+        // This means that we have reached the next half hour
+        // Say the last dataPoint.time is 11:00pm, 11:20pm we're fine
+        // because that will be floored to 11:00pm too
+        // at 11:30pm they wouldn't match so then we need to fetch again
+        // which will make sure the user is synced and rebuild the data array
+        const intervalId = setInterval(() => {
+            const currentHalfHour = format12HourTime(
+                new Date(floorToNearestHalfHour(Date.now()))
+            );
+            console.log("checking fetching")
+
+            if (
+                data.length > 0 &&
+                currentHalfHour !== data[data.length - 1].time
+            ) {
+                console.log("fetching")
+                fetchData();
+            }
+        }, 1000); // Check every second
 
         // Return a cleanup function that clears the interval
         return () => clearInterval(intervalId);
-    }, [setIsDown, setLoading]);
+    }, [ setIsDown, setLoading]);
 
     // useEffect(() => {
 
