@@ -123,7 +123,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                 // Step 3: Set the baseline as mean + (multiplier * standard deviation) + adjustment factor
                 // The multiplier can be adjusted based on desired sensitivity
                 const multiplier = 1.3; // This is adjustable
-                const minimum = 10;
+                const minimum = 1;
                 let baselineCalced = Math.max(
                     Math.floor(mean + multiplier * stdDeviation),
                     minimum
@@ -145,7 +145,6 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
                 }
             });
         };
-
         // Call fetchData immediately to load data on component mount
         fetchData();
         // Set up an interval to fetch data every minute
@@ -162,20 +161,20 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
             const currentHalfHour = format12HourTime(
                 new Date(floorToNearestHalfHour(Date.now()))
             );
-            console.log("checking fetching")
+            console.log("checking fetching");
 
             if (
                 data.length > 0 &&
                 currentHalfHour !== data[data.length - 1].time
             ) {
-                console.log("fetching")
+                console.log("fetching");
                 fetchData();
             }
         }, 1000); // Check every second
 
         // Return a cleanup function that clears the interval
         return () => clearInterval(intervalId);
-    }, [ setIsDown, setLoading]);
+    }, [setIsDown, setLoading, data]);
 
     // useEffect(() => {
 
