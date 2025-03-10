@@ -122,7 +122,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
 
                 // Step 3: Set the baseline as mean + (multiplier * standard deviation) + adjustment factor
                 // The multiplier can be adjusted based on desired sensitivity
-                const multiplier = 1; // This is adjustable
+                const multiplier = 1.3; // This is adjustable
                 const minimum = 1;
                 let baselineCalced = Math.max(
                     Math.floor(mean + multiplier * stdDeviation),
@@ -174,7 +174,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
 
         // Return a cleanup function that clears the interval
         return () => clearInterval(intervalId);
-    }, [setIsDown, setLoading, data]);
+    }, [setIsDown, setLoading]);
 
     // useEffect(() => {
 
@@ -277,6 +277,30 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
         );
     };
 
+    // Dynamically compute past baselines per timestamp for rendering
+    const transformedData = data.map((_, index, arr) => {
+        const pastData = arr.slice(0, index + 1);
+        const sum = pastData.reduce((acc, dp) => acc + dp.Reports, 0);
+        const mean = sum / pastData.length;
+
+        const varianceSum = pastData.reduce(
+            (acc, dp) => acc + Math.pow(dp.Reports - mean, 2),
+            0
+        );
+        const variance =
+            pastData.length > 1 ? varianceSum / (pastData.length - 1) : 0;
+        const stdDeviation = Math.sqrt(variance);
+
+        const multiplier = 1.3;
+        const minimum = 1;
+        const baselineAtThisPoint = Math.max(
+            Math.floor(mean + multiplier * stdDeviation),
+            minimum
+        );
+
+        return { ...arr[index], Baseline: baselineAtThisPoint };
+    });
+
     return (
         <Card className="w-full max-w-6xl mb-5 bg-white dark:bg-gray-950">
             <div className="flex items-center">
@@ -330,7 +354,7 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
             {!loading ? (
                 <AreaChart
                     className="h-72 bg-white dark:bg-gray-950"
-                    data={data}
+                    data={transformedData}
                     index="time"
                     categories={["Reports", "Baseline"]}
                     colors={["#0070f3", "gray"]}
