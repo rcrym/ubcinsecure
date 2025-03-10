@@ -122,8 +122,8 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
 
                 // Step 3: Set the baseline as mean + (multiplier * standard deviation) + adjustment factor
                 // The multiplier can be adjusted based on desired sensitivity
-                const multiplier = 1.3; // This is adjustable
-                const minimum = 1;
+                const multiplier = 0.2; // This is adjustable
+                const minimum = 5;
                 let baselineCalced = Math.max(
                     Math.floor(mean + multiplier * stdDeviation),
                     minimum
@@ -301,8 +301,8 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
             pastData.length > 1 ? varianceSum / (pastData.length - 1) : 0;
         const stdDeviation = Math.sqrt(variance);
 
-        const multiplier = 1.3;
-        const minimum = 1;
+        const multiplier = 0.2;
+        const minimum = 5;
         const baselineAtThisPoint = Math.max(
             Math.floor(mean + multiplier * stdDeviation),
             minimum
