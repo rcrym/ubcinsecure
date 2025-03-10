@@ -212,11 +212,22 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
         // Extract the end time (current data point's time)
         const endTime = payload[0].payload.time;
 
-        // Convert the time string back into a Date object
-        const endDate = new Date(`2023-01-01 ${endTime}`); // Placeholder date
-        const startDate = new Date(endDate.getTime() - 30 * 60 * 1000); // Subtract 30 minutes
+        // More robust time parsing that works across browsers
+        const [hourMin, ampm] = endTime.split(" ");
+        let [hours, minutes] = hourMin.split(":").map((n: string) => parseInt(n, 10));
 
-        // Format the start time
+        // Convert to 24-hour format for calculations
+        if (ampm === "PM" && hours < 12) hours += 12;
+        if (ampm === "AM" && hours === 12) hours = 0;
+
+        // Create a base date (today) and set the specific time
+        const endDate = new Date();
+        endDate.setHours(hours, minutes, 0, 0);
+
+        // Calculate start time (30 minutes before)
+        const startDate = new Date(endDate.getTime() - 30 * 60 * 1000);
+
+        // Format using your existing format12HourTime function
         const startTime = format12HourTime(startDate);
         return (
             // <div className="w-56 rounded-tremor-default border border-tremor-border bg-tremor-background p-2 text-tremor-default shadow-tremor-dropdown">
