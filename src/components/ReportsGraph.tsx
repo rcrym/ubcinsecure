@@ -208,6 +208,16 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
     const customTooltip = (props: CustomTooltipProps) => {
         const { payload, active } = props;
         if (!active || !payload) return null;
+
+        // Extract the end time (current data point's time)
+        const endTime = payload[0].payload.time;
+
+        // Convert the time string back into a Date object
+        const endDate = new Date(`2023-01-01 ${endTime}`); // Placeholder date
+        const startDate = new Date(endDate.getTime() - 30 * 60 * 1000); // Subtract 30 minutes
+
+        // Format the start time
+        const startTime = format12HourTime(startDate);
         return (
             // <div className="w-56 rounded-tremor-default border border-tremor-border bg-tremor-background p-2 text-tremor-default shadow-tremor-dropdown">
             //     {payload.map((category: any, idx: number) => (
@@ -228,8 +238,8 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
             // </div>
             <div className="rounded-tremor-default text-tremor-default border bg-tremor-background shadow-tremor-dropdown border-tremor-border dark:bg-dark-tremor-background dark:shadow-dark-tremor-dropdown dark:border-dark-tremor-border">
                 <div className="w-full border-tremor-border border-b px-4 py-2 dark:border-dark-tremor-border flex justify-between">
-                    <span className="font-medium text-tremor-content-emphasis dark:text-dark-tremor-content-emphasis">
-                        {payload[0].payload.time}
+                    <span className="font-medium text-tremor-content-emphasis dark:text-dark-tremor-content-emphasis mr-3">
+                        {startTime} - {endTime}
                     </span>
                     {payload[0].value &&
                     payload[1].value &&
