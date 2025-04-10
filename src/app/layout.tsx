@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
     title: "Is UBC Secure Down?",
     description:
-        "UBC Secure outages reported in the last 12 hours. Having problems with UBC Secure? Report it here!",
+        "UBC Secure outages reported in the last 30 minutes. Having problems with the wifi on the UBC campus? Report it here!",
 };
 
 export default function RootLayout({

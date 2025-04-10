@@ -19,7 +19,7 @@ export default function Home() {
         <div className="bg-white dark:bg-gray-950 flex flex-col justify-center items-center h-screen px-5">
             {/* <UptimeTracker/> */}
             <div className="flex justify-center items-baseline  mb-10">
-                <span className="text-5xl mb-10 dark:text-white text-gray-800 mr-3 translate-y-0.5">
+                <span className="text-5xl mb-10 dark:text-white text-gray-800 mr-3 translate-y-1.5">
                     <GiGoose />
                 </span>
 
