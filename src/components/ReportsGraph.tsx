@@ -161,13 +161,13 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
             const currentHalfHour = format12HourTime(
                 new Date(floorToNearestHalfHour(Date.now()))
             );
-            console.log("checking fetching");
+            // console.log("checking fetching");
 
             if (
                 data.length > 0 &&
                 currentHalfHour !== data[data.length - 1].time
             ) {
-                console.log("fetching");
+                // console.log("fetching");
                 fetchData();
             }
         }, 1000); // Check every second
@@ -214,7 +214,9 @@ const ReportsGraph: React.FC<ReportsGraphProps> = ({
 
         // More robust time parsing that works across browsers
         const [hourMin, ampm] = endTime.split(" ");
-        let [hours, minutes] = hourMin.split(":").map((n: string) => parseInt(n, 10));
+        let [hours, minutes] = hourMin
+            .split(":")
+            .map((n: string) => parseInt(n, 10));
 
         // Convert to 24-hour format for calculations
         if (ampm === "PM" && hours < 12) hours += 12;
