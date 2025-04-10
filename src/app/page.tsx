@@ -64,7 +64,7 @@ export default function Home() {
                 onClick={() => {
                     analytics && logEvent(analytics, "chatubc_click");
                 }}
-                className={`group mt-6 px-6 py-2 flex items-center justify-center rounded-xl border text-sm sm:text-base font-medium ${
+                className={`group mt-6 px-6 py-2 flex items-center justify-between rounded-xl border text-sm sm:text-base font-medium ${
                     ctaVisible ? "opacity-100" : "opacity-0"
                 }`}
                 style={{
@@ -77,28 +77,30 @@ export default function Home() {
                         : "translateY(8px)",
                     transition: ctaVisible
                         ? "opacity 0.7s ease-out, transform 0.7s ease-out"
-                        : "none", // no transition until visible
+                        : "none",
                 }}
                 onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor =
                         "rgba(0, 112, 243, 0.15)";
-                    e.currentTarget.style.transition = "none"; // disable transition on hover
+                    e.currentTarget.style.transition = "none";
                     e.currentTarget.style.transform = "translateY(-1px)";
                 }}
                 onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor =
                         "rgba(0, 112, 243, 0.08)";
                     e.currentTarget.style.transition =
-                        "opacity 0.7s ease-out, transform 0.7s ease-out"; // restore original transition
+                        "opacity 0.7s ease-out, transform 0.7s ease-out";
                     e.currentTarget.style.transform = "translateY(0px)";
                 }}
             >
-                Message other UBC students on
-                <span className="ml-1 font-semibold underline group-hover:underline">
-                    ChatUBC.com
+                <span className="flex-1 text-left">
+                    Message other UBC students on{" "}
+                    <span className="font-semibold underline group-hover:underline">
+                        ChatUBC.com
+                    </span>
                 </span>
                 <svg
-                    className="ml-1 w-4 h-4 transition-transform group-hover:translate-x-0.5"
+                    className="ml-4 w-4 h-4 flex-shrink-0 transition-transform group-hover:translate-x-0.5"
                     fill="none"
                     stroke="#0070f3"
                     strokeWidth="2"
